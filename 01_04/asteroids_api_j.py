@@ -10,5 +10,5 @@ response = requests.get(
 
 # print(response)
 
-with open("./asteroids", "a") as f:
+with open("./asteroids.json", "a") as f:
     f.write(response.text)
