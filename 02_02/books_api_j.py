@@ -1,8 +1,4 @@
-from flask import render_template
-from flask import Flask
-from flask import request
-from flask import url_for
-from flask import render_template
+from flask import render_template, Flask, request, url_for
 from markupsafe import escape
 
 app = Flask(__name__)
@@ -44,6 +40,12 @@ def login():
 @app.route("/test/<name>")
 def test(name=None):
     return render_template("test.html", person=name)
+
+
+@app.route("/login-form")
+def login_form():
+    return render_template("login-form.html")
+
 
 # @app.route('/hello/')
 # @app.route('/hello/<name>')
