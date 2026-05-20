@@ -1,6 +1,8 @@
+from flask import render_template
 from flask import Flask
 from flask import request
 from flask import url_for
+from flask import render_template
 from markupsafe import escape
 
 app = Flask(__name__)
@@ -38,12 +40,15 @@ def login():
     return "Du bruker GET"
 
 
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     if request.method == "POST":
-#         return do_the_login()
-#     else:
-#         return show_the_login_form()
+@app.route("/test")
+@app.route("/test/<name>")
+def test(name=None):
+    return render_template("test.html", person=name)
+
+# @app.route('/hello/')
+# @app.route('/hello/<name>')
+# def hello(name=None):
+#     return render_template('hello.html', person=name)
 
 
 # url_for returnerer selve strengen til url´en som genereres
