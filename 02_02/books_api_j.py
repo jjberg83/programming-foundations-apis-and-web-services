@@ -9,6 +9,16 @@ app = Flask(__name__)
 to_do_list = {"1": "dra over gulvene", "2": "rydde boden"}
 
 
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template("500.html"), 500
+
+
 @app.route("/create_item", methods=["POST"])
 def create_item():
     print(f"request: {request}")
@@ -26,8 +36,25 @@ def create_item():
             to_do_list[f"{to_do_list_index}"] = itemname
             print(f"Status dict: {to_do_list}")
             return f"<h1>{itemname} er lagt til i to-do listen din !!!</h1>"
-    else:
-        return render_template("login.html")
+
+
+@app.route("/read_item", methods=["POST"])
+def read_item():
+    print(f"request: {request}")
+    print(f"request.args: {request.args}")
+    print(f"request.form: {request.form}")
+    print(f"to_do_list: {to_do_list}")
+    if request.method == "POST":
+        itemname = request.form["itemname"]
+        print(itemname)
+        if itemname in to_do_list.values():
+            print(f"Status dict: {to_do_list}")
+            return f"<h1>Elementet finnes og er: {itemname}</h1>"
+        else:
+            to_do_list_index = len(to_do_list) + 1
+            to_do_list[f"{to_do_list_index}"] = itemname
+            print(f"Status dict: {to_do_list}")
+            return f"<h1>{itemname} er lagt til i to-do listen din !!!</h1>"
 
 
 # Set a secret key for encrypting session data
