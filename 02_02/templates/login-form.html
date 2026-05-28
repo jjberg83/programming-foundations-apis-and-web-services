@@ -3,7 +3,7 @@
 <head>
   <title>Handling of http get and post request</title>
   <style>
-    div {
+    .green-box {
       width: 400px;
       border: 1px solid green;
       padding: 10px;
@@ -13,15 +13,25 @@
 </head>
 
 <body>
-
   <div>
+    {% if message %}
+      <p>{{message}}</p>
+    {% endif %}
+    <h1>Min gjøremålsliste:</h1>
+    <ul>
+      {% for item in items.values() %}
+      <li>{{item}}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="green-box">
     <h1>Create To-Do Item</h1>
     <form method="POST" action="{{ url_for('create_item') }}">
       <input type="text" name="itemname" placeholder="itemname">
       <button type="submit">submit</button>
     </form>
   </div>
-  <div>
+  <div class="green-box">
     <h1>Read To-Do Item</h1>
     <form method="POST" action="{{ url_for('read_item') }}">
       <input type="text" name="itemname" placeholder="itemname">

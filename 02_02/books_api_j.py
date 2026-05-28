@@ -30,12 +30,13 @@ def create_item():
         print(itemname)
         if itemname in to_do_list.values():
             print(f"Status dict: {to_do_list}")
-            return f"<h1>{itemname} finnes allerede i to-do listen din !!!</h1>"
+            message = f"{itemname} finnes allerede i to-do listen din !!!"
         else:
             to_do_list_index = len(to_do_list) + 1
             to_do_list[f"{to_do_list_index}"] = itemname
             print(f"Status dict: {to_do_list}")
-            return f"<h1>{itemname} er lagt til i to-do listen din !!!</h1>"
+            message = f"{itemname} er lagt til i to-do listen din !!!"
+        return render_template("login-form.html", items=to_do_list, message=message)
 
 
 @app.route("/read_item", methods=["POST"])
@@ -66,7 +67,8 @@ users = {"kunal": "1234", "user2": "password2"}
 
 @app.route("/")
 def hello_world():
-    return render_template("login-form.html")
+    message = ""
+    return render_template("login-form.html", items=to_do_list, message=message)
 
 
 @app.route("/my-to-do-list")
@@ -102,7 +104,7 @@ def test(name=None):
 
 @app.route("/login-form")
 def login_form():
-    return render_template("login-form.html")
+    return render_template("login-form.html", items=to_do_list)
 
 
 # url_for returnerer selve strengen til url´en som genereres
