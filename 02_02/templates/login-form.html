@@ -9,13 +9,16 @@
       padding: 10px;
       margin-bottom: 5px;
     }
+    .message-box {
+      background-color: lightgreen;
+    }
   </style>
 </head>
 
 <body>
   <div>
     {% if message %}
-      <p>{{message}}</p>
+    <p class="message-box">{{message}}</p>
     {% endif %}
     <h1>Min gjøremålsliste:</h1>
     <ul>
@@ -34,7 +37,7 @@
   <div class="green-box">
     <h1>Read To-Do Item</h1>
     <form method="POST" action="{{ url_for('read_item') }}">
-      <input type="text" name="itemname" placeholder="itemname">
+      <input type="text" name="itemnumber" placeholder="itemnumber">
       <button type="submit">submit</button>
     </form>
   </div>
