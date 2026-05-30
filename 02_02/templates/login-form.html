@@ -12,6 +12,16 @@
     .message-box {
       background-color: lightgreen;
     }
+    button {
+      background-color: lightgreen;
+      border: none;
+      padding: 5px;
+      font-weight: bold;
+      margin-top: 7px;
+    }
+    input {
+      margin-top: 4px;
+    }
   </style>
 </head>
 
@@ -30,15 +40,25 @@
   <div class="green-box">
     <h1>Create To-Do Item</h1>
     <form method="POST" action="{{ url_for('create_item') }}">
-      <input type="text" name="itemname" placeholder="itemname">
-      <button type="submit">submit</button>
+      <input type="text" name="itemname" placeholder="Enter to-do item"><br />
+      <button type="submit">Submit</button>
     </form>
   </div>
+  
   <div class="green-box">
     <h1>Read To-Do Item</h1>
     <form method="POST" action="{{ url_for('read_item') }}">
-      <input type="text" name="itemnumber" placeholder="itemnumber">
-      <button type="submit">submit</button>
+      <input type="text" name="itemnumber" placeholder="Item number"><br />
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+  
+  <div class="green-box">
+    <h1>Update To-Do Item</h1>
+    <form method="POST" action="{{ url_for('update_item') }}">
+      <input type="text" name="itemnumber" placeholder="Item number"><br/>
+      <input type="text" name="newvalue" placeholder="New value"><br />
+      <button type="submit">Submit</button>
     </form>
   </div>
 

@@ -24,15 +24,32 @@ def internal_error(error):
     return render_template("500.html"), 500
 
 
+# Helper functions (don´t repeat yourself - twice)
+# Functions here are used twice in the main route functions
+
+
+def insert_to_do_item(to_do_item, index=None):
+    if not index:
+        index = len(to_do_list) + 1
+        to_do_list[index] = to_do_item
+    else:
+        to_do_list[index] = to_do_item
+
+
+# Main rourte functions
+
+
 @app.route("/create_item", methods=["POST"])
 def create_item():
     if request.method == "POST":
         itemname = request.form["itemname"]
         if itemname in to_do_list.values():
             message = f"{itemname} finnes allerede i to-do listen din !!!"
+        elif len(itemname) == 0:
+            message = "Du må skrive noe - blanke to-do items teller ikke."
         else:
-            to_do_list_index = len(to_do_list) + 1
-            to_do_list[to_do_list_index] = itemname
+            # Lager hjelpefunksjon - siden vi bruker funksjonaliteten igjen i update_item
+            insert_to_do_item(itemname)
             message = f"{itemname} er lagt til i to-do listen din !!!"
         return render_template("login-form.html", items=to_do_list, message=message)
 
@@ -40,11 +57,31 @@ def create_item():
 @app.route("/read_item", methods=["POST"])
 def read_item():
     if request.method == "POST":
-        itemnumber = int(request.form["itemnumber"])
-        if itemnumber in to_do_list:
-            message = f"Element nr. {itemnumber} finnes og har verdien: {to_do_list[itemnumber]}"
-        else:
-            message = f"Element nr. {itemnumber} finnes ikke i gjøremålslisten din"
+        try:
+            itemnumber = int(request.form["itemnumber"])
+            if itemnumber in to_do_list:
+                message = f"Element nr. {itemnumber} finnes og har verdien: {to_do_list[itemnumber]}"
+            else:
+                message = f"Element nr. {itemnumber} finnes ikke i gjøremålslisten din"
+        except:
+            message = f"Husk å skrive inn et tall - prøv igjen!"
+        return render_template("login-form.html", items=to_do_list, message=message)
+
+
+@app.route("/update_item", methods=["POST"])
+def update_item():
+    if request.method == "POST":
+        try:
+            itemnumber = int(request.form["itemnumber"])
+            newvalue = request.form["newvalue"]
+            if itemnumber in to_do_list:
+                old_value = to_do_list[itemnumber]
+                insert_to_do_item(newvalue, itemnumber)
+                message = f"Element nr. {itemnumber} finnes, gammel verdi: {old_value}, ny verdi: {to_do_list[itemnumber]}"
+            else:
+                message = f"Element nr. {itemnumber} finnes ikke i gjøremålslisten din"
+        except:
+            message = f"Husk å skrive inn et tall - prøv igjen!"
         return render_template("login-form.html", items=to_do_list, message=message)
 
 
