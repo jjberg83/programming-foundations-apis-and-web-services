@@ -41,7 +41,7 @@
     <h1>Create To-Do Item</h1>
     <form method="POST" action="{{ url_for('create_item') }}">
       <input type="text" name="itemname" placeholder="Enter to-do item"><br />
-      <button type="submit">Submit</button>
+      <button type="submit">Create</button>
     </form>
   </div>
   
@@ -49,7 +49,7 @@
     <h1>Read To-Do Item</h1>
     <form method="POST" action="{{ url_for('read_item') }}">
       <input type="text" name="itemnumber" placeholder="Item number"><br />
-      <button type="submit">Submit</button>
+      <button type="submit">Read</button>
     </form>
   </div>
   
@@ -58,7 +58,15 @@
     <form method="POST" action="{{ url_for('update_item') }}">
       <input type="text" name="itemnumber" placeholder="Item number"><br/>
       <input type="text" name="newvalue" placeholder="New value"><br />
-      <button type="submit">Submit</button>
+      <button type="submit">Update</button>
+    </form>
+  </div>
+  
+  <div class="green-box">
+    <h1>Delete To-Do Item</h1>
+    <form method="POST" action="{{ url_for('delete_item') }}">
+      <input type="text" name="itemnumber" placeholder="Item number"><br/>
+      <button type="submit">Delete</button>
     </form>
   </div>
 
