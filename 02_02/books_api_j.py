@@ -85,6 +85,27 @@ def update_item():
         return render_template("login-form.html", items=to_do_list, message=message)
 
 
+@app.route("/delete_item", methods=["POST"])
+def delete_item():
+    if request.method == "POST":
+        try:
+            itemnumber = int(request.form["itemnumber"])
+            if itemnumber in to_do_list:
+                old_value = to_do_list.pop(itemnumber)
+                to_do_list_values = list(to_do_list.values())
+                to_do_list.clear()
+                print(to_do_list_values)
+                print(to_do_list)
+                to_do_list.update({i + 1: v for i, v in enumerate(to_do_list_values)})
+                print(to_do_list)
+                message = f"Element nr. {itemnumber}: {old_value} er slettet"
+            else:
+                message = f"Element nr. {itemnumber} finnes ikke i gjøremålslisten din"
+        except:
+            message = f"Husk å skrive inn et tall - prøv igjen!"
+        return render_template("login-form.html", items=to_do_list, message=message)
+
+
 # Set a secret key for encrypting session data
 app.secret_key = "my_secret_key"
 
