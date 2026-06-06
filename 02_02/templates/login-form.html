@@ -22,6 +22,9 @@
     input {
       margin-top: 4px;
     }
+    li {
+      list-style-type: none;
+    }
   </style>
 </head>
 
@@ -32,8 +35,8 @@
     {% endif %}
     <h1>Min gjøremålsliste:</h1>
     <ul>
-      {% for item in items.values() %}
-      <li>{{item}}</li>
+      {% for key,value in items.items() %}
+      <li>{{key}}: {{value}}</li>
       {% endfor %}
     </ul>
   </div>
