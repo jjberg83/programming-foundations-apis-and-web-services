@@ -133,7 +133,21 @@ def read_to_do_list():
 @app.route("/hello")
 def hello():
     name = request.args.get("name", "Flask")
-    return f"Hello, {escape(name)}!"
+    age = request.args.get("age", "forever young")
+    print(f"name {name}")
+    print(f"age {age}")
+    if name and age:
+        # return f"Hello, {escape(name)}!"
+        return f"Hello {name}, you are {age}!"
+        # /hello?name=<script>alert("bad")</script>
+        # argumentet over vil bli håndtert av escape
+        # Håndteres automatisk av jinja, men her bruker man jo ikke jinja
+
+        # Legger jeg inn dette som url:
+        # http://127.0.0.1:5000/hello?name=victoria&&location=stavanger
+        # Blir output:
+        # Hello victoria, you are forever young!
+        # Mao: age får default verdi, og location, som ikke er definert i funksjonen, blir ignorert
 
 
 @app.route("/user/<username>")
