@@ -1,8 +1,9 @@
 # NB: Forskjellen mellom 'request' (Flask) vs 'requests' (library):
 # request (brukes her)  — reads incoming requests to YOUR server (built into Flask, server-side)
 # requests (brukes i 01_04) — sends outgoing requests TO other APIs  (pip install requests, client-side)
-from flask import Flask, request, url_for
+from flask import Flask, request, url_for, jsonify
 from markupsafe import escape
+import json
 
 app = Flask(__name__)
 
@@ -13,21 +14,6 @@ to_do_list = [
     {"id": 3, "activity": "kjøpe bobler"},
     {"id": 4, "activity": "spør om presanger til i morgen"},
 ]
-
-
-@app.errorhandler(403)
-def not_found_error(error):
-    return "Forbidden client error. 403 response status code indicates that the server understood the request but refused to process it."
-
-
-@app.errorhandler(404)
-def not_found_error(error):
-    return "File not found error (404)"
-
-
-@app.errorhandler(500)
-def internal_error(error):
-    return "An unexpected error has occurred. The administrator has been notified. Sorry for the inconvenience!"
 
 
 # Helper functions (don´t repeat yourself - twice)
@@ -58,6 +44,56 @@ def create_item():
             insert_to_do_item(itemname)
             message = f"{itemname} er lagt til i to-do listen din !!!"
         return render_template("login-form.html", items=to_do_list, message=message)
+
+
+@app.route("/my_to_do_list", methods=["GET"])
+def read_all():
+    # return to_do_list
+    return jsonify(to_do_list)
+
+
+# Slik gjør man POST requesten, denne gang fra en terminal
+# Legg merke til at måten jeg skriver funksjonen på under,
+# avgjør hvordan objektet jeg skriver inn, altså {"activity": "teste APIet mitt"},
+# skal se ut. Det er derfor APIer har dokumentasjon! En bruker har jo ikke tilgang
+# til å se disse funksjonene. Brukeren, altså koden, kan bare gjøre kallene.
+
+# curl -X POST http://127.0.0.1:5000/my_to_do_list \
+#  -H "Content-Type: application/json" \
+#  -d '{"activity": "teste APIet mitt"}'
+
+# En viktig ting å huske på er at det er kode som gjør requests.
+# Dette kan være terminalkall, fra Notebooks i Fabric, fra Postman
+# eller fra Postman lignende extensions i VS Code.
+# Men koden kan også gjøre disse requestene via et user interface. En
+# bruker kan trykke på en knapp i user interfacet, som trigger
+# en funksjon, og inni den funksjonen ligger et curl kall som over.
+
+
+@app.route("/my_to_do_list", methods=["POST"])
+def add_to_do_item():
+    index = len(to_do_list) + 1
+    print(f"request.data er: {request.data}")
+    to_do_item = json.loads(request.data)
+    print(f"to_do_item: {to_do_item}")
+    if not to_do_item_is_valid(to_do_item):
+        return jsonify({"error": "Invalid to-do-item properties."}), 400
+    to_do_item["id"] = index
+    to_do_list.append(to_do_item)
+    print(to_do_item)
+    print("You, or your code, just made a POST request!")
+    return "You rock, to-do-list has been updated!"
+
+
+# Denne hjelpemetoden sjekker bare at objektet vi sender inn har
+# en nøkkel som kalles "activity"
+def to_do_item_is_valid(to_do_item):
+    print(f"to_do_item.keys(): {to_do_item.keys()}")
+    for key in to_do_item.keys():
+        print(f"key: {key}")
+        if key != "activity":
+            return False
+    return True
 
 
 @app.route("/read_item", methods=["GET"])
@@ -112,13 +148,6 @@ def delete_item():
         return render_template("login-form.html", items=to_do_list, message=message)
 
 
-# Set a secret key for encrypting session data
-app.secret_key = "my_secret_key"
-
-# dictionary to store user and password
-users = {"kunal": "1234", "user2": "password2"}
-
-
 @app.route("/")
 def hello_world():
     return """Welcome to this amazing API! <br/>
@@ -150,11 +179,16 @@ def hello():
         # Mao: age får default verdi, og location, som ikke er definert i funksjonen, blir ignorert
 
 
+# Her er en annen måte å gjøre det samme på (med variable rules)
+# Jeg kan i tillegg legge til variabler, som ovenfor
+# Variabler som ikke er definert blir også her ignorert
 @app.route("/user/<username>")
 def show_user_profile(username):
+    age = request.args.get("age", "forever young")
     # show the user profile for that user
-    return f"User {escape(username)}"
-    # return f"User {escape(username)}, this is your to-do list: {escape(to_do_list)}"
+    return f"Hello {escape(username)}, you are {age}"
+    # http://127.0.0.1:5000/user/oscar?age=17&location=stavanger gir Hello oscar, you are 17
+    # http://127.0.0.1:5000/user/oscar?location=stavanger gir Hello oscar, you are forever young
 
 
 @app.route("/login", methods=["GET", "POST"])
