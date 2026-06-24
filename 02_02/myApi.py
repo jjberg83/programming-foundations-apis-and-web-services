@@ -15,42 +15,9 @@ to_do_list = [
     {"id": 4, "activity": "spør om presanger til i morgen"},
 ]
 
-
-# Helper functions (don´t repeat yourself - twice)
-# Functions here are used twice in the main route functions
-
-
-def insert_to_do_item(to_do_item, index=None):
-    if not index:
-        index = len(to_do_list) + 1
-        to_do_list[index] = to_do_item
-    else:
-        to_do_list[index] = to_do_item
-
-
-# Main rourte functions
-
-
-@app.route("/create_item", methods=["POST"])
-def create_item():
-    if request.method == "POST":
-        itemname = request.form["itemname"]
-        if itemname in to_do_list.values():
-            message = f"{itemname} finnes allerede i to-do listen din !!!"
-        elif len(itemname) == 0:
-            message = "Du må skrive noe - blanke to-do items teller ikke."
-        else:
-            # Lager hjelpefunksjon - siden vi bruker funksjonaliteten igjen i update_item
-            insert_to_do_item(itemname)
-            message = f"{itemname} er lagt til i to-do listen din !!!"
-        return render_template("login-form.html", items=to_do_list, message=message)
-
-
-@app.route("/my_to_do_list", methods=["GET"])
-def read_all():
-    # return to_do_list
-    return jsonify(to_do_list)
-
+#######################
+# Create an item
+#######################
 
 # Slik gjør man POST requesten, denne gang fra en terminal
 # Legg merke til at måten jeg skriver funksjonen på under,
@@ -58,9 +25,7 @@ def read_all():
 # skal se ut. Det er derfor APIer har dokumentasjon! En bruker har jo ikke tilgang
 # til å se disse funksjonene. Brukeren, altså koden, kan bare gjøre kallene.
 
-# curl -X POST http://127.0.0.1:5000/my_to_do_list \
-#  -H "Content-Type: application/json" \
-#  -d '{"activity": "teste APIet mitt"}'
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}'
 
 # En viktig ting å huske på er at det er kode som gjør requests.
 # Dette kan være terminalkall, fra Notebooks i Fabric, fra Postman
@@ -71,7 +36,10 @@ def read_all():
 
 
 @app.route("/my_to_do_list", methods=["POST"])
-def add_to_do_item():
+def create_an_item():
+    # TODO:
+    # sjekk for at verdien ikke finnes i listen fra før av (hvis det er tilfelle: message = f"{itemname} finnes allerede i to-do listen din !!!")
+    # sjekk for at man faktisk har skrevet noe (hvis ikke: message = "Du må skrive noe - blanke to-do items teller ikke.")
     index = len(to_do_list) + 1
     print(f"request.data er: {request.data}")
     to_do_item = json.loads(request.data)
@@ -94,6 +62,43 @@ def to_do_item_is_valid(to_do_item):
         if key != "activity":
             return False
     return True
+
+
+#######################
+# Retrieve all items
+#######################
+
+
+# Denne kan også gjøres i nettleseren, siden man kan gjøre GET kall i url-feltet
+# For å sjekke med GET kall fra terminal, bruk:
+# curl -X GET http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json"
+@app.route("/my_to_do_list", methods=["GET"])
+def retrieve_all_items():
+    return jsonify(to_do_list)
+
+
+##########################
+# Retrieve a single item
+##########################
+
+############################
+# Update an existing item
+#############################
+
+########################
+# Delete an item
+#########################
+
+# Helper functions (don´t repeat yourself - twice)
+# Functions here are used twice in the main route functions
+
+
+def insert_to_do_item(to_do_item, index=None):
+    if not index:
+        index = len(to_do_list) + 1
+        to_do_list[index] = to_do_item
+    else:
+        to_do_list[index] = to_do_item
 
 
 @app.route("/read_item", methods=["GET"])
