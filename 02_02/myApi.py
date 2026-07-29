@@ -40,6 +40,7 @@ def create_an_item():
     # TODO:
     # sjekk for at verdien ikke finnes i listen fra før av (hvis det er tilfelle: message = f"{itemname} finnes allerede i to-do listen din !!!")
     # sjekk for at man faktisk har skrevet noe (hvis ikke: message = "Du må skrive noe - blanke to-do items teller ikke.")
+    # print(f"To-do-listen før POST request: {to_do_list}")
     index = len(to_do_list) + 1
     print(f"request.data er: {request.data}")
     to_do_item = json.loads(request.data)
@@ -50,18 +51,24 @@ def create_an_item():
     to_do_list.append(to_do_item)
     print(to_do_item)
     print("You, or your code, just made a POST request!")
+    print(f"To-do-listen etter POST request: {to_do_list}")
     return "You rock, to-do-list has been updated!"
 
 
 # Denne hjelpemetoden sjekker bare at objektet vi sender inn har
-# en nøkkel som kalles "activity"
+# en nøkkel som kalles "activity", og at aktiviteten er en streng, 
+# som ikke er tom, og som ikke finnes fra før i listen.
 def to_do_item_is_valid(to_do_item):
-    print(f"to_do_item.keys(): {to_do_item.keys()}")
-    for key in to_do_item.keys():
-        print(f"key: {key}")
+    for key,value in to_do_item.items():
         if key != "activity":
-            return False
-    return True
+            continue
+        for activity in to_do_list
+    # print(f"to_do_item.keys(): {to_do_item.keys()}")
+    # for key in to_do_item.keys():
+    #     print(f"key: {key}")
+    #     if key != "activity":
+    #         return False
+    # return True
 
 
 #######################
