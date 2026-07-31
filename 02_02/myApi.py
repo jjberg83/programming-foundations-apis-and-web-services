@@ -26,6 +26,7 @@ to_do_list = [
 # til å se disse funksjonene. Brukeren, altså koden, kan bare gjøre kallene.
 
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}'
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"teste APIet mitt"}'
 
 # En viktig ting å huske på er at det er kode som gjør requests.
 # Dette kan være terminalkall, fra Notebooks i Fabric, fra Postman
@@ -60,6 +61,7 @@ def create_an_item():
 # som ikke er tom, og som ikke finnes fra før i listen.
 def to_do_item_is_valid(to_do_item):
     for key,value in to_do_item.items():
+        print(f"key: {key}, value: {value}")
         if key != "activity":
             continue
         for activity in to_do_list
