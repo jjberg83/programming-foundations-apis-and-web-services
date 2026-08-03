@@ -26,7 +26,7 @@ to_do_list = [
 # til å se disse funksjonene. Brukeren, altså koden, kan bare gjøre kallene.
 
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}'
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"teste APIet mitt"}'
+
 
 # En viktig ting å huske på er at det er kode som gjør requests.
 # Dette kan være terminalkall, fra Notebooks i Fabric, fra Postman
@@ -46,8 +46,13 @@ def create_an_item():
     print(f"request.data er: {request.data}")
     to_do_item = json.loads(request.data)
     print(f"to_do_item: {to_do_item}")
-    if not to_do_item_is_valid(to_do_item):
-        return jsonify({"error": "Invalid to-do-item properties."}), 400
+    # if not to_do_item_is_valid(to_do_item):
+    #     return jsonify({"error": "Invalid to-do-item properties."}), 400
+    # TODO: Skriv om funksjonen over, slik at vi får igjen en 
+    # informativ feilmelding tilbake til bruker - i stedet for bare 
+    # en generell "feil har skjedd" (da aner ikke bruker hva som er feil)
+    validity_check = to_do_item_is_valid(to_do_item)
+
     to_do_item["id"] = index
     to_do_list.append(to_do_item)
     print(to_do_item)
@@ -56,15 +61,21 @@ def create_an_item():
     return "You rock, to-do-list has been updated!"
 
 
-# Denne hjelpemetoden sjekker bare at objektet vi sender inn har
-# en nøkkel som kalles "activity", og at aktiviteten er en streng, 
-# som ikke er tom, og som ikke finnes fra før i listen.
+# Denne hjelpemetoden sjekker at:
+# - json-elementet kun inneholder inn ett element
+# - nøkkelen kalles "activity" 
+# - aktiviteten er en streng, og at den ikke er tom 
+# - aktiviteten ikke finnes fra før i listen 
 def to_do_item_is_valid(to_do_item):
     for key,value in to_do_item.items():
+        print(f"Lengde på json element er: {len(to_do_item.items())}")
         print(f"key: {key}, value: {value}")
+        if len(to_do_item.items()) != 1:
+            return "You can only send in one activity at a time"
         if key != "activity":
-            continue
-        for activity in to_do_list
+            return "The key should be named activity"
+        if value
+        # for activity in to_do_list
     # print(f"to_do_item.keys(): {to_do_item.keys()}")
     # for key in to_do_item.keys():
     #     print(f"key: {key}")
