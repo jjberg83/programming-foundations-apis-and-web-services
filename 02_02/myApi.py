@@ -1,6 +1,9 @@
 # NB: Forskjellen mellom 'request' (Flask) vs 'requests' (library):
 # request (brukes her)  — reads incoming requests to YOUR server (built into Flask, server-side)
 # requests (brukes i 01_04) — sends outgoing requests TO other APIs  (pip install requests, client-side)
+# For å kjøre i git-bash:
+# Naviger til rett undermappe (for eksempel 02_02)
+# .venv/Scripts/python.exe -m flask --app myApi.py run --debug
 from flask import Flask, request, url_for, jsonify
 from markupsafe import escape
 import json
@@ -62,26 +65,24 @@ def create_an_item():
 
 
 # Denne hjelpemetoden sjekker at:
-# - json-elementet kun inneholder inn ett element
-# - nøkkelen kalles "activity" 
-# - aktiviteten er en streng, og at den ikke er tom 
+# - json-elementet kun inneholder inn ett element - DONE
+# - nøkkelen kalles "activity" - DONE
+# - aktiviteten er en streng, og at den ikke er tom - DONE
 # - aktiviteten ikke finnes fra før i listen 
 def to_do_item_is_valid(to_do_item):
     for key,value in to_do_item.items():
         print(f"Lengde på json element er: {len(to_do_item.items())}")
         print(f"key: {key}, value: {value}")
+        print(f"value sin type er: {type(value)}")
+        print(f"value er av type string: {isinstance(value, str)}")
         if len(to_do_item.items()) != 1:
             return "You can only send in one activity at a time"
         if key != "activity":
             return "The key should be named activity"
-        if value
-        # for activity in to_do_list
-    # print(f"to_do_item.keys(): {to_do_item.keys()}")
-    # for key in to_do_item.keys():
-    #     print(f"key: {key}")
-    #     if key != "activity":
-    #         return False
-    # return True
+        if not isinstance(value, str):
+            return "The value of the input should be a string"
+        if len(value) < 1:
+            return "The value of the input should not be empty"
 
 
 #######################
