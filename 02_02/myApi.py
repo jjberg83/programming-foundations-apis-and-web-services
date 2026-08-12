@@ -28,7 +28,11 @@ to_do_list = [
 # skal se ut. Det er derfor APIer har dokumentasjon! En bruker har jo ikke tilgang
 # til å se disse funksjonene. Brukeren, altså koden, kan bare gjøre kallene.
 
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}'
+# Tester
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}' OK
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": ""}' OK (tom string gjenkjennes)
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": 1}' > OK (at int ikke er det samme som string gjenkjennes)
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": True}' > krasjer
 
 
 # En viktig ting å huske på er at det er kode som gjør requests.
@@ -55,7 +59,7 @@ def create_an_item():
     # informativ feilmelding tilbake til bruker - i stedet for bare 
     # en generell "feil har skjedd" (da aner ikke bruker hva som er feil)
     validity_check = to_do_item_is_valid(to_do_item)
-
+    print(f"validity_check sin verdi: {validity_check}")
     to_do_item["id"] = index
     to_do_list.append(to_do_item)
     print(to_do_item)
@@ -70,19 +74,22 @@ def create_an_item():
 # - aktiviteten er en streng, og at den ikke er tom - DONE
 # - aktiviteten ikke finnes fra før i listen 
 def to_do_item_is_valid(to_do_item):
-    for key,value in to_do_item.items():
-        print(f"Lengde på json element er: {len(to_do_item.items())}")
-        print(f"key: {key}, value: {value}")
-        print(f"value sin type er: {type(value)}")
-        print(f"value er av type string: {isinstance(value, str)}")
-        if len(to_do_item.items()) != 1:
-            return "You can only send in one activity at a time"
-        if key != "activity":
-            return "The key should be named activity"
-        if not isinstance(value, str):
-            return "The value of the input should be a string"
-        if len(value) < 1:
-            return "The value of the input should not be empty"
+    try:
+        for key,value in to_do_item.items():
+            print(f"Lengde på json element er: {len(to_do_item.items())}")
+            print(f"key: {key}, value: {value}")
+            print(f"value sin type er: {type(value)}")
+            print(f"value er av type string: {isinstance(value, str)}")
+            if len(to_do_item.items()) != 1:
+                return "You can only send in one activity at a time"
+            if key != "activity":
+                return "The key should be named activity"
+            if not isinstance(value, str):
+                return "The value of the input should be a string"
+            if len(value) < 1:
+                return "The value of the input should not be empty"
+    except Exception as e:
+        return f"Feil oppstod, antageligvis pga at activity ikke er en string. Error = {e}"
 
 
 #######################
