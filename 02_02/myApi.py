@@ -32,7 +32,7 @@ to_do_list = [
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}' OK
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": ""}' OK (tom string gjenkjennes)
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": 1}' > OK (at int ikke er det samme som string gjenkjennes)
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": True}' > krasjer
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": True}' > Blir håndtert av exceptions
 
 
 # En viktig ting å huske på er at det er kode som gjør requests.
@@ -47,25 +47,28 @@ to_do_list = [
 def create_an_item():
     # TODO:
     # sjekk for at verdien ikke finnes i listen fra før av (hvis det er tilfelle: message = f"{itemname} finnes allerede i to-do listen din !!!")
-    # sjekk for at man faktisk har skrevet noe (hvis ikke: message = "Du må skrive noe - blanke to-do items teller ikke.")
+    
     # print(f"To-do-listen før POST request: {to_do_list}")
     index = len(to_do_list) + 1
     print(f"request.data er: {request.data}")
-    to_do_item = json.loads(request.data)
-    print(f"to_do_item: {to_do_item}")
-    # if not to_do_item_is_valid(to_do_item):
-    #     return jsonify({"error": "Invalid to-do-item properties."}), 400
-    # TODO: Skriv om funksjonen over, slik at vi får igjen en 
-    # informativ feilmelding tilbake til bruker - i stedet for bare 
-    # en generell "feil har skjedd" (da aner ikke bruker hva som er feil)
-    validity_check = to_do_item_is_valid(to_do_item)
-    print(f"validity_check sin verdi: {validity_check}")
-    to_do_item["id"] = index
-    to_do_list.append(to_do_item)
-    print(to_do_item)
-    print("You, or your code, just made a POST request!")
-    print(f"To-do-listen etter POST request: {to_do_list}")
-    return "You rock, to-do-list has been updated!"
+    try:
+        to_do_item = json.loads(request.data)
+        print(f"to_do_item: {to_do_item}")
+        validity_check = to_do_item_is_valid(to_do_item)
+        print(f"validity_check sin verdi: {validity_check}")
+        if validity_check == "Valid":
+            to_do_item["id"] = index
+            to_do_list.append(to_do_item)
+            print(to_do_item)
+            print("You, or your code, just made a POST request!")
+            print(f"To-do-listen etter POST request: {to_do_list}")
+            return "You rock, to-do-list has been updated!"
+        print(f"To-do-listen etter POST request: {to_do_list}")
+        print(f"Validity check returns: {validity_check}")
+        return "Something is incorrect with the API-request. Please check the syntax, and verify that all parameters have the correct data type"
+    except Exception as e:
+        print(f"Something is incorrect with the API-request. Please check the syntax, and verify that all parameters have the correct data type. Details: {e}")
+        return "Something went wrong, to-do-list has not been updated"
 
 
 # Denne hjelpemetoden sjekker at:
@@ -74,22 +77,27 @@ def create_an_item():
 # - aktiviteten er en streng, og at den ikke er tom - DONE
 # - aktiviteten ikke finnes fra før i listen 
 def to_do_item_is_valid(to_do_item):
-    try:
-        for key,value in to_do_item.items():
-            print(f"Lengde på json element er: {len(to_do_item.items())}")
-            print(f"key: {key}, value: {value}")
-            print(f"value sin type er: {type(value)}")
-            print(f"value er av type string: {isinstance(value, str)}")
-            if len(to_do_item.items()) != 1:
-                return "You can only send in one activity at a time"
-            if key != "activity":
-                return "The key should be named activity"
-            if not isinstance(value, str):
-                return "The value of the input should be a string"
-            if len(value) < 1:
-                return "The value of the input should not be empty"
-    except Exception as e:
-        return f"Feil oppstod, antageligvis pga at activity ikke er en string. Error = {e}"
+    for key,value in to_do_item.items():
+
+        # Verify that input is in the right format
+        if len(to_do_item.items()) != 1:
+            return "You can only send in one activity at a time"
+        if key != "activity":
+            return "The key should be named activity"
+        if not isinstance(value, str):
+            return "The value of the input should be a string"
+        if len(value) < 1:
+            return "The value of the input should not be empty"
+        
+        # Verify that the activity does not exist in the to-do-list already
+        for element in to_do_list:
+            print("----------")
+            print(f"element[activity]= {element['activity']}, value= {value}")
+            if element["activity"] == value:
+                return "Activity already exists in the to-do-list"
+
+        return "Valid"
+    
 
 
 #######################
