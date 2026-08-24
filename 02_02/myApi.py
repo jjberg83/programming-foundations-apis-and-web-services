@@ -49,23 +49,15 @@ to_do_list = [
 
 @app.route("/my_to_do_list", methods=["POST"])
 def create_an_item():
-    # TODO:
-    # sjekk for at verdien ikke finnes i listen fra før av (hvis det er tilfelle: message = f"{itemname} finnes allerede i to-do listen din !!!")
-    
-    # print(f"To-do-listen før POST request: {to_do_list}")
     index = len(to_do_list) + 1
-    print(f"request.data er: {request.data}")
+    # print(f"request.data er: {request.data}")
     try:
-        #to_do_item = json.loads(request.data) # krasjer når jeg bruker æøå i API-kall (CURL)
-        to_do_item = request.get_json(request.data) # denne krasjer også
-        print(f"to_do_item: {to_do_item}")
+        to_do_item = json.loads(request.data)
         validity_check = to_do_item_is_valid(to_do_item)
-        print(f"validity_check sin verdi: {validity_check}")
 
         if validity_check == "Valid":
             to_do_item["id"] = index
             to_do_list.append(to_do_item)
-            print(to_do_item)
             print("You, or your code, just made a POST request!")
             print(f"To-do-listen etter POST request: {to_do_list}")
             return "You rock, to-do-list has been updated!"
@@ -77,13 +69,14 @@ def create_an_item():
         print(f"Something is incorrect with the API-request. Please check the syntax, and verify that all parameters have the correct data type. Details: {e}")
         return "Something went wrong, to-do-list has not been updated"
 
-
-# Denne hjelpemetoden sjekker at:
-# - json-elementet kun inneholder inn ett element - DONE
-# - nøkkelen kalles "activity" - DONE
-# - aktiviteten er en streng, og at den ikke er tom - DONE
-# - aktiviteten ikke finnes fra før i listen 
 def to_do_item_is_valid(to_do_item):
+    '''
+    Denne hjelpemetoden sjekker at:
+    - json-elementet kun inneholder inn ett element
+    - nøkkelen kalles "activity"
+    - aktiviteten er en streng, og at den ikke er tom
+    - aktiviteten ikke finnes fra før i listen
+    '''
     for key,value in to_do_item.items():
 
         # Verify that input is in the right format
@@ -112,7 +105,8 @@ def to_do_item_is_valid(to_do_item):
 #######################
 
 
-# Denne kan også gjøres i nettleseren, siden man kan gjøre GET kall i url-feltet
+# Denne kan også gjøres i nettleseren, siden man kan gjøre GET kall i url-feltet. Gå da til denne urlen:
+# http://127.0.0.1:5000/my_to_do_list
 # For å sjekke med GET kall fra terminal, bruk:
 # curl -X GET http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json"
 @app.route("/my_to_do_list", methods=["GET"])
@@ -121,8 +115,15 @@ def retrieve_all_items():
 
 
 ##########################
-# Retrieve a single item
+# Retrieve a single item (by item number)
 ##########################
+
+# Vurderer om jeg skal gjøre det om til en GET eller POST kall
+# I utgangspunktet tenker jeg at dette er en GET kall, men da må jeg finne ut
+# hvordan jeg kan sende argumenter med i curl-kommandoen.
+# Sjekk her først:
+# https://reqbin.com/req/c-1n4ljxb9/curl-get-request-example
+@app.route("/")
 
 ############################
 # Update an existing item
