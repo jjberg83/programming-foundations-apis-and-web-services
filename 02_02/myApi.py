@@ -32,7 +32,11 @@ to_do_list = [
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}' OK
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": ""}' OK (tom string gjenkjennes)
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": 1}' > OK (at int ikke er det samme som string gjenkjennes)
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": True}' > Blir håndtert av exceptions
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d  '{"activity": True}' > Blir håndtert av exceptions
+
+# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "kjøpe bobler"}' æøå ser ut til å krasje hele apiet. Får følgende feilmelding:
+#'utf-8' codec can't decode byte 0xf8 in position 16: invalid start byte. Skjer bare fra git bash pga min datamaskins encoding. Skjer ikke i Powershell.
+# charset=utf-8
 
 
 # En viktig ting å huske på er at det er kode som gjør requests.
@@ -52,10 +56,12 @@ def create_an_item():
     index = len(to_do_list) + 1
     print(f"request.data er: {request.data}")
     try:
-        to_do_item = json.loads(request.data)
+        #to_do_item = json.loads(request.data) # krasjer når jeg bruker æøå i API-kall (CURL)
+        to_do_item = request.get_json(request.data) # denne krasjer også
         print(f"to_do_item: {to_do_item}")
         validity_check = to_do_item_is_valid(to_do_item)
         print(f"validity_check sin verdi: {validity_check}")
+
         if validity_check == "Valid":
             to_do_item["id"] = index
             to_do_list.append(to_do_item)
@@ -63,9 +69,10 @@ def create_an_item():
             print("You, or your code, just made a POST request!")
             print(f"To-do-listen etter POST request: {to_do_list}")
             return "You rock, to-do-list has been updated!"
+        
         print(f"To-do-listen etter POST request: {to_do_list}")
-        print(f"Validity check returns: {validity_check}")
-        return "Something is incorrect with the API-request. Please check the syntax, and verify that all parameters have the correct data type"
+        return f"API-request error: {validity_check}"
+    
     except Exception as e:
         print(f"Something is incorrect with the API-request. Please check the syntax, and verify that all parameters have the correct data type. Details: {e}")
         return "Something went wrong, to-do-list has not been updated"
