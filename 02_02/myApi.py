@@ -29,10 +29,10 @@ to_do_list = [
 # til å se disse funksjonene. Brukeren, altså koden, kan bare gjøre kallene.
 
 # Tester
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}' OK
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": ""}' OK (tom string gjenkjennes)
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": 1}' > OK (at int ikke er det samme som string gjenkjennes)
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d  '{"activity": True}' > Blir håndtert av exceptions
+# curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}' OK
+# curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": ""}' OK (tom string gjenkjennes)
+# curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": 1}' > OK (at int ikke er det samme som string gjenkjennes)
+# curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d  '{"activity": True}' > Blir håndtert av exceptions
 
 # curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "kjøpe bobler"}' æøå ser ut til å krasje hele apiet. Får følgende feilmelding:
 #'utf-8' codec can't decode byte 0xf8 in position 16: invalid start byte. Skjer bare fra git bash pga min datamaskins encoding. Skjer ikke i Powershell.
@@ -47,7 +47,7 @@ to_do_list = [
 # en funksjon, og inni den funksjonen ligger et curl kall som over.
 
 
-@app.route("/my_to_do_list", methods=["POST"])
+@app.route("/my-to-do-list", methods=["POST"])
 def create_an_item():
     index = len(to_do_list) + 1
     # print(f"request.data er: {request.data}")
@@ -106,10 +106,10 @@ def to_do_item_is_valid(to_do_item):
 
 
 # Denne kan også gjøres i nettleseren, siden man kan gjøre GET kall i url-feltet. Gå da til denne urlen:
-# http://127.0.0.1:5000/my_to_do_list
+# http://127.0.0.1:5000/my-to-do-list
 # For å sjekke med GET kall fra terminal, bruk:
-# curl -X GET http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json"
-@app.route("/my_to_do_list", methods=["GET"])
+# curl -X GET http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json"
+@app.route("/my-to-do-list", methods=["GET"])
 def retrieve_all_items():
     return jsonify(to_do_list)
 
@@ -119,11 +119,26 @@ def retrieve_all_items():
 ##########################
 
 # Vurderer om jeg skal gjøre det om til en GET eller POST kall
-# I utgangspunktet tenker jeg at dette er en GET kall, men da må jeg finne ut
-# hvordan jeg kan sende argumenter med i curl-kommandoen.
-# Sjekk her først:
-# https://reqbin.com/req/c-1n4ljxb9/curl-get-request-example
-@app.route("/")
+# I utgangspunktet tenkte jeg at dette er en GET kall, men da må jeg finne ut
+# hvordan jeg kan sende argumenter med i curl-kommandoen. Copilot sier at GET er for 
+# read operations mens POST brukes til å endre server status.
+
+# curl -X GET http://127.0.0.1:5000/my-to-do-list/3 -H "Content-Type: application/json" > bør returnere 'kjøpe bobler'
+# curl -X GET http://127.0.0.1:5000/my-to-do-list/tre -H "Content-Type: application/json" > bør returnere "Please enter an argument that can be converted into a number format ('1' is OK, 'One' is not)"
+# curl -X GET http://127.0.0.1:5000/my-to-do-list/-1 -H "Content-Type: application/json" > bør returnere "Please enter a number between 1 and {len(to_do_list)}"
+# curl -X GET http://127.0.0.1:5000/my-to-do-list/10 -H "Content-Type: application/json" > bør returnere "Please enter a number between 1 and {len(to_do_list)}"
+
+
+@app.route('/my-to-do-list/<item_id>', methods=['GET'])
+def retrieve_single_item(item_id):
+    try:
+        index = int(item_id) - 1
+        if( (index >= len(to_do_list)) or (index < 0) ):
+            return f"Please enter a number between 1 and {len(to_do_list)}"
+        return to_do_list[index]["activity"]
+    except Exception as e:
+        return "Please enter an argument that can be converted into a number format ('1' and 1 is OK, 'One' is not)"
+
 
 ############################
 # Update an existing item
