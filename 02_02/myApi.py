@@ -18,6 +18,15 @@ to_do_list = [
     {"id": 4, "activity": "spør om presanger til i morgen"},
 ]
 
+# Hva Copilot sier om navngivning av routes i Flask:
+# In REST, a URL identifies a resource (a thing), not an action. 
+# The action is expressed by the HTTP method (GET/POST/PUT/DELETE), 
+# not by the URL. 
+
+# Her er ressursen my-to-do-list, og det man gjør er altså
+# å få den/ett element (GET), lage ett element (POST),
+# oppdatere et element (PUT), eller slette et element (DELETE).
+
 #######################
 # Create an item
 #######################
@@ -118,11 +127,6 @@ def retrieve_all_items():
 # Retrieve a single item (by item number)
 ##########################
 
-# Vurderer om jeg skal gjøre det om til en GET eller POST kall
-# I utgangspunktet tenkte jeg at dette er en GET kall, men da må jeg finne ut
-# hvordan jeg kan sende argumenter med i curl-kommandoen. Copilot sier at GET er for 
-# read operations mens POST brukes til å endre server status.
-
 # curl -X GET http://127.0.0.1:5000/my-to-do-list/3 -H "Content-Type: application/json" > bør returnere 'kjøpe bobler'
 # curl -X GET http://127.0.0.1:5000/my-to-do-list/tre -H "Content-Type: application/json" > bør returnere "Please enter an argument that can be converted into a number format ('1' is OK, 'One' is not)"
 # curl -X GET http://127.0.0.1:5000/my-to-do-list/-1 -H "Content-Type: application/json" > bør returnere "Please enter a number between 1 and {len(to_do_list)}"
@@ -144,6 +148,31 @@ def retrieve_single_item(item_id):
 # Update an existing item
 #############################
 
+# to_do_list = [
+#     {"id": 1, "activity": "dra over gulvene"},
+#     {"id": 2, "activity": "klippe plenen"},
+#     {"id": 3, "activity": "kjøpe bobler"},
+#     {"id": 4, "activity": "spør om presanger til i morgen"},
+# ]
+
+# curl -X PUT http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"id": 2, "activity": " lage daimkake"}'
+
+@app.route('/my-to-do-list', methods=['PUT'])
+def update_single_item():
+    to_do_item = json.loads(request.data)
+    for key, value in to_do_item.items():
+        print(f"k:{key}, v:{value}")
+    return "To-do list has been updated"
+
+    # try:
+    #     index = int(item_id) - 1
+    #     if( (index >= len(to_do_list)) or (index < 0) ):
+    #         return f"Please enter a number between 1 and {len(to_do_list)}"
+        
+    # except Exception as e:
+    #     return "Please enter an argument that can be converted into a number format ('1' and 1 is OK, 'One' is not)"
+
+
 ########################
 # Delete an item
 #########################
@@ -152,64 +181,7 @@ def retrieve_single_item(item_id):
 # Functions here are used twice in the main route functions
 
 
-def insert_to_do_item(to_do_item, index=None):
-    if not index:
-        index = len(to_do_list) + 1
-        to_do_list[index] = to_do_item
-    else:
-        to_do_list[index] = to_do_item
 
-
-@app.route("/read_item", methods=["GET"])
-def read_item():
-    if request.method == "GET":
-        try:
-            itemnumber = int(request.form["itemnumber"])
-            if itemnumber in to_do_list:
-                message = f"Element nr. {itemnumber} finnes og har verdien: {to_do_list[itemnumber]}"
-            else:
-                message = f"Element nr. {itemnumber} finnes ikke i gjøremålslisten din"
-        except:
-            message = f"Husk å skrive inn et tall - prøv igjen!"
-        return render_template("login-form.html", items=to_do_list, message=message)
-
-
-@app.route("/update_item", methods=["POST"])
-def update_item():
-    if request.method == "POST":
-        try:
-            itemnumber = int(request.form["itemnumber"])
-            newvalue = request.form["newvalue"]
-            if itemnumber in to_do_list:
-                old_value = to_do_list[itemnumber]
-                insert_to_do_item(newvalue, itemnumber)
-                message = f"Element nr. {itemnumber} finnes, gammel verdi: {old_value}, ny verdi: {to_do_list[itemnumber]}"
-            else:
-                message = f"Element nr. {itemnumber} finnes ikke i gjøremålslisten din"
-        except:
-            message = f"Husk å skrive inn et tall - prøv igjen!"
-        return render_template("login-form.html", items=to_do_list, message=message)
-
-
-@app.route("/delete_item", methods=["POST"])
-def delete_item():
-    if request.method == "POST":
-        try:
-            itemnumber = int(request.form["itemnumber"])
-            if itemnumber in to_do_list:
-                old_value = to_do_list.pop(itemnumber)
-                to_do_list_values = list(to_do_list.values())
-                to_do_list.clear()
-                print(to_do_list_values)
-                print(to_do_list)
-                to_do_list.update({i + 1: v for i, v in enumerate(to_do_list_values)})
-                print(to_do_list)
-                message = f"Element nr. {itemnumber}: {old_value} er slettet"
-            else:
-                message = f"Element nr. {itemnumber} finnes ikke i gjøremålslisten din"
-        except:
-            message = f"Husk å skrive inn et tall - prøv igjen!"
-        return render_template("login-form.html", items=to_do_list, message=message)
 
 
 @app.route("/")
