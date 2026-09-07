@@ -160,9 +160,19 @@ def retrieve_single_item(item_id):
 @app.route('/my-to-do-list', methods=['PUT'])
 def update_single_item():
     to_do_item = json.loads(request.data)
-    for key, value in to_do_item.items():
-        print(f"k:{key}, v:{value}")
-    return "To-do list has been updated"
+    validity_check = to_do_item_is_valid(to_do_item)
+    try:
+        if validity_check == "Valid":
+            to_do_item["id"] = to_do_item["value"]
+            print("You, or your code, just made a PUT request!")
+            print(f"To-do-listen etter PUT request: {to_do_list}")
+            return "You rock, to-do-list has been updated!"
+    except:
+        
+
+    return "Yea"
+
+    
 
     # try:
     #     index = int(item_id) - 1
