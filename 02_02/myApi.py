@@ -155,22 +155,37 @@ def retrieve_single_item(item_id):
 #     {"id": 4, "activity": "spør om presanger til i morgen"},
 # ]
 
+    # '''
+    # Denne hjelpemetoden sjekker at:
+    # - json-elementet kun inneholder inn ett element
+    # - nøkkelen kalles "activity"
+    # - aktiviteten er en streng, og at den ikke er tom
+    # - aktiviteten ikke finnes fra før i listen
+    # '''
+
 # curl -X PUT http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"id": 2, "activity": " lage daimkake"}'
+# curl -X PUT http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"id": 2, "activity": "kjøpe bobler"}' 
 
 @app.route('/my-to-do-list', methods=['PUT'])
 def update_single_item():
     to_do_item = json.loads(request.data)
+    print(to_do_item)
+    print()
     validity_check = to_do_item_is_valid(to_do_item)
     try:
         if validity_check == "Valid":
-            to_do_item["id"] = to_do_item["value"]
-            print("You, or your code, just made a PUT request!")
-            print(f"To-do-listen etter PUT request: {to_do_list}")
-            return "You rock, to-do-list has been updated!"
+            index = to_do_item["id"]
+            if index <= len(to_do_list) and index > 0:
+                # TODO: actually update the element
+                print("You, or your code, just made a PUT request!")
+                print(f"To-do-listen etter PUT request: {to_do_list}")
+                return "You rock, to-do-list has been updated!"
+            else:
+                return f"You have to have an id value between 1 and {len(to_do_list)}"
     except:
-        
+        raise Exception("Something is incorrect with the API-request.")
 
-    return "Yea"
+    return "Something is incorrect with the API-request. Please check the syntax, and verify that the json-element only have one element, the id is a number that already exists in the to-do-list, the key is called activity, the activity is a non-empty string and it does not exist in your to-do-list already."
 
     
 
