@@ -86,10 +86,12 @@ def to_do_item_is_valid(to_do_item):
     - aktiviteten er en streng, og at den ikke er tom
     - aktiviteten ikke finnes fra før i listen
     '''
+    
     for key,value in to_do_item.items():
-
+        if key == "id":
+            continue
         # Verify that input is in the right format
-        if len(to_do_item.items()) != 1:
+        if len(to_do_item.items()) != 2:
             return "You can only send in one activity at a time"
         if key != "activity":
             return "The key should be named activity"
@@ -100,8 +102,8 @@ def to_do_item_is_valid(to_do_item):
         
         # Verify that the activity does not exist in the to-do-list already
         for element in to_do_list:
-            print("----------")
-            print(f"element[activity]= {element['activity']}, value= {value}")
+            # print("----------")
+            # print(f"element[activity]= {element['activity']}, value= {value}")
             if element["activity"] == value:
                 return "Activity already exists in the to-do-list"
 
@@ -169,8 +171,8 @@ def retrieve_single_item(item_id):
 @app.route('/my-to-do-list', methods=['PUT'])
 def update_single_item():
     to_do_item = json.loads(request.data)
-    print(to_do_item)
-    print()
+    # print(to_do_item)
+    # print()
     validity_check = to_do_item_is_valid(to_do_item)
     try:
         if validity_check == "Valid":
@@ -182,6 +184,10 @@ def update_single_item():
                 return "You rock, to-do-list has been updated!"
             else:
                 return f"You have to have an id value between 1 and {len(to_do_list)}"
+        else: 
+            print("##############")
+            print(f"validity_check: {validity_check}")
+            print("##############")
     except:
         raise Exception("Something is incorrect with the API-request.")
 
