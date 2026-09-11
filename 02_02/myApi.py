@@ -165,7 +165,7 @@ def retrieve_single_item(item_id):
 
 # curl -X PUT http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"id": 2, "activity": " lage daimkake"}'
 # curl -X PUT http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"id": 2, "activity": "kjøpe bobler"}' 
-# øp
+# _
 @app.route('/my-to-do-list', methods=['PUT'])
 def update_single_item():
     to_do_item = json.loads(request.data)
