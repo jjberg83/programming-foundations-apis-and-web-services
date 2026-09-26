@@ -171,15 +171,15 @@ def retrieve_single_item(item_id):
 @app.route('/my-to-do-list', methods=['PUT'])
 def update_single_item():
     to_do_item = json.loads(request.data)
-    # print(to_do_item)
-    # print()
+    index = to_do_item["id"] - 1 # python lists starts with index 0
+    activity = to_do_item["activity"]
     validity_check = to_do_item_is_valid(to_do_item)
+    
     try:
         if validity_check == "Valid":
-            index = to_do_item["id"]
-            if index <= len(to_do_list) and index > 0:
-                # TODO: actually update the element
+            if index < len(to_do_list) and index > -1:
                 print("You, or your code, just made a PUT request!")
+                to_do_list[index]["activity"] = activity
                 print(f"To-do-listen etter PUT request: {to_do_list}")
                 return "You rock, to-do-list has been updated!"
             else:
@@ -193,15 +193,6 @@ def update_single_item():
 
     return "Something is incorrect with the API-request. Please check the syntax, and verify that the json-element only have one element, the id is a number that already exists in the to-do-list, the key is called activity, the activity is a non-empty string and it does not exist in your to-do-list already."
 
-    
-
-    # try:
-    #     index = int(item_id) - 1
-    #     if( (index >= len(to_do_list)) or (index < 0) ):
-    #         return f"Please enter a number between 1 and {len(to_do_list)}"
-        
-    # except Exception as e:
-    #     return "Please enter an argument that can be converted into a number format ('1' and 1 is OK, 'One' is not)"
 
 
 #########################
