@@ -20,8 +20,14 @@
 #   activities = []
 #   activities.append()
 
-myDict = {"activity"}
+# myDict = {"activity"}
 
-for key, value in myDict.items():
-  print(key)
-  print(value)
+# for key, value in myDict.items():
+#   print(key)
+#   print(value)
+
+tall = 2
+for x in range(tall, 10):
+  print(x)
+  print(tall)
+  print("-------")

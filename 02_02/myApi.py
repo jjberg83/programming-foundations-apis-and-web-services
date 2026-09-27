@@ -18,14 +18,18 @@ to_do_list = [
     {"id": 4, "activity": "spør om presanger til i morgen"},
 ]
 
-# Hva Copilot sier om navngivning av routes i Flask:
+# Hva Copilot og Claude sier om navngivning av routes i Flask:
 # In REST, a URL identifies a resource (a thing), not an action. 
 # The action is expressed by the HTTP method (GET/POST/PUT/DELETE), 
 # not by the URL. 
 
-# Her er ressursen my-to-do-list, og det man gjør er altså
-# å få den/ett element (GET), lage ett element (POST),
-# oppdatere et element (PUT), eller slette et element (DELETE).
+# Action	        Method	        URL
+# Get all items	    GET	            /my-to-do-list
+# Create an item	POST	        /my-to-do-list
+# Get one item	    GET	            /my-to-do-list/3
+# Update one item   PUT (or PATCH)	/my-to-do-list/3
+# Delete one item	DELETE	        /my-to-do-list/3
+
 
 #######################
 # Create an item
@@ -78,38 +82,6 @@ def create_an_item():
         print(f"Something is incorrect with the API-request. Please check the syntax, and verify that all parameters have the correct data type. Details: {e}")
         return "Something went wrong, to-do-list has not been updated"
 
-def to_do_item_is_valid(to_do_item):
-    '''
-    Denne hjelpemetoden sjekker at:
-    - json-elementet kun inneholder inn ett element
-    - nøkkelen kalles "activity"
-    - aktiviteten er en streng, og at den ikke er tom
-    - aktiviteten ikke finnes fra før i listen
-    '''
-    
-    for key,value in to_do_item.items():
-        if key == "id":
-            continue
-        # Verify that input is in the right format
-        if len(to_do_item.items()) != 2:
-            return "You can only send in one activity at a time"
-        if key != "activity":
-            return "The key should be named activity"
-        if not isinstance(value, str):
-            return "The value of the input should be a string"
-        if len(value) < 1:
-            return "The value of the input should not be empty"
-        
-        # Verify that the activity does not exist in the to-do-list already
-        for element in to_do_list:
-            # print("----------")
-            # print(f"element[activity]= {element['activity']}, value= {value}")
-            if element["activity"] == value:
-                return "Activity already exists in the to-do-list"
-
-        return "Valid"
-    
-
 
 #######################
 # Retrieve all items
@@ -150,34 +122,19 @@ def retrieve_single_item(item_id):
 # Update an existing item
 #############################
 
-# to_do_list = [
-#     {"id": 1, "activity": "dra over gulvene"},
-#     {"id": 2, "activity": "klippe plenen"},
-#     {"id": 3, "activity": "kjøpe bobler"},
-#     {"id": 4, "activity": "spør om presanger til i morgen"},
-# ]
+# curl -X PUT http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json" -d '{"activity": " lage daimkake"}'
+# curl -X PUT http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json" -d '{"activity": "kjøpe bobler"}' 
 
-    # '''
-    # Denne hjelpemetoden sjekker at:
-    # - json-elementet kun inneholder inn ett element
-    # - nøkkelen kalles "activity"
-    # - aktiviteten er en streng, og at den ikke er tom
-    # - aktiviteten ikke finnes fra før i listen
-    # '''
-
-# curl -X PUT http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"id": 2, "activity": " lage daimkake"}'
-# curl -X PUT http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"id": 2, "activity": "kjøpe bobler"}' 
-# _#
-@app.route('/my-to-do-list', methods=['PUT'])
-def update_single_item():
+@app.route('/my-to-do-list/<item_id>', methods=['PUT'])
+def update_single_item(item_id):
     to_do_item = json.loads(request.data)
-    index = to_do_item["id"] - 1 # python lists starts with index 0
+    index = int(item_id) - 1 # python lists starts with index 0
     activity = to_do_item["activity"]
     validity_check = to_do_item_is_valid(to_do_item)
     
     try:
         if validity_check == "Valid":
-            if index < len(to_do_list) and index > -1:
+            if index > -1 and index < len(to_do_list):
                 print("You, or your code, just made a PUT request!")
                 to_do_list[index]["activity"] = activity
                 print(f"To-do-listen etter PUT request: {to_do_list}")
@@ -199,10 +156,76 @@ def update_single_item():
 # Delete an item
 #########################
 
+# curl -X DELETE http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json"
+
+@app.route('/my-to-do-list/<item_number>', methods=['DELETE'])
+def delete_single_item(item_number):
+    try:
+        item_number = int(item_number)
+    except:
+        return f"You have to insert a number after the last slash in the url. /1 is OK, /one is not"
+    
+    if item_number > 0 and item_number <= len(to_do_list):
+        index = item_number - 1
+        for x in range(index, len(to_do_list)):
+            print("-------------")
+            print(f"Index is now: {index}")
+            print(f"x is now: {x}")
+            print(to_do_list[index])
+            if x == index:
+                print("Det poppes")
+                to_do_list.pop(x)
+                print(to_do_list)
+                print("-------------")
+                continue
+            print(to_do_list[x]["id"])
+            to_do_list[x]["id"] = x
+            print("-------------")
+        return "Item has been deleted from to-do-list"
+            
+    else:
+        return f"This item does not exist in the to-do-list"
+
+# to_do_list = [
+#     {"id": 1, "activity": "dra over gulvene"},
+#     {"id": 2, "activity": "klippe plenen"},
+#     {"id": 3, "activity": "kjøpe bobler"},
+#     {"id": 4, "activity": "spør om presanger til i morgen"},
+# ]
+
 # Helper functions (don´t repeat yourself - twice)
 # Functions here are used twice in the main route functions
 
+def to_do_item_is_valid(to_do_item):
+    '''
+    Denne hjelpemetoden sjekker at:
+    - json-elementet kun inneholder inn ett element
+    - nøkkelen kalles "activity"
+    - aktiviteten er en streng, og at den ikke er tom
+    - aktiviteten ikke finnes fra før i listen
+    '''
+    
+    for key,value in to_do_item.items():
+        if key == "id":
+            continue
+        # Verify that input is in the right format
+        if len(to_do_item.items()) != 1:
+            return "You can only send in one activity at a time, not more, not less"
+        if key != "activity":
+            return "The key should be named activity"
+        if not isinstance(value, str):
+            return "The value of the input should be a string"
+        if len(value) < 1:
+            return "The value of the input should not be empty"
+        
+        # Verify that the activity does not exist in the to-do-list already
+        for element in to_do_list:
+            # print("----------")
+            # print(f"element[activity]= {element['activity']}, value= {value}")
+            if element["activity"] == value:
+                return "Activity already exists in the to-do-list"
 
+        return "Valid"
 
 
 
