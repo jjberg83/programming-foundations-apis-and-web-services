@@ -168,30 +168,14 @@ def delete_single_item(item_number):
     if item_number > 0 and item_number <= len(to_do_list):
         index = item_number - 1
         for x in range(index, len(to_do_list)):
-            print("-------------")
-            print(f"Index is now: {index}")
-            print(f"x is now: {x}")
-            print(to_do_list[index])
             if x == index:
-                print("Det poppes")
                 to_do_list.pop(x)
-                print(to_do_list)
-                print("-------------")
                 continue
-            print(to_do_list[x]["id"])
-            to_do_list[x]["id"] = x
-            print("-------------")
+            to_do_list[x-1]["id"] = x # x-1 since one element has been deleted
         return "Item has been deleted from to-do-list"
             
     else:
         return f"This item does not exist in the to-do-list"
-
-# to_do_list = [
-#     {"id": 1, "activity": "dra over gulvene"},
-#     {"id": 2, "activity": "klippe plenen"},
-#     {"id": 3, "activity": "kjøpe bobler"},
-#     {"id": 4, "activity": "spør om presanger til i morgen"},
-# ]
 
 # Helper functions (don´t repeat yourself - twice)
 # Functions here are used twice in the main route functions
@@ -226,121 +210,6 @@ def to_do_item_is_valid(to_do_item):
                 return "Activity already exists in the to-do-list"
 
         return "Valid"
-
-
-
-@app.route("/")
-def hello_world():
-    return """Welcome to this amazing API! <br/>
-    Start using it by entering different things into the url."""
-
-
-@app.route("/my-to-do-list")
-def read_to_do_list():
-    return "<p>Another result</p>"
-
-
-@app.route("/hello")
-def hello():
-    name = request.args.get("name", "Flask")
-    age = request.args.get("age", "forever young")
-    print(f"name {name}")
-    print(f"age {age}")
-    if name and age:
-        # return f"Hello, {escape(name)}!"
-        return f"Hello {name}, you are {age}!"
-        # /hello?name=<script>alert("bad")</script>
-        # argumentet over vil bli håndtert av escape
-        # Håndteres automatisk av jinja, men her bruker man jo ikke jinja
-
-        # Legger jeg inn dette som url:
-        # http://127.0.0.1:5000/hello?name=victoria&&location=stavanger
-        # Blir output:
-        # Hello victoria, you are forever young!
-        # Mao: age får default verdi, og location, som ikke er definert i funksjonen, blir ignorert
-
-
-# Her er en annen måte å gjøre det samme på (med variable rules)
-# Jeg kan i tillegg legge til variabler, som ovenfor
-# Variabler som ikke er definert blir også her ignorert
-@app.route("/user/<username>")
-def show_user_profile(username):
-    age = request.args.get("age", "forever young")
-    # show the user profile for that user
-    return f"Hello {escape(username)}, you are {age}"
-    # http://127.0.0.1:5000/user/oscar?age=17&location=stavanger gir Hello oscar, you are 17
-    # http://127.0.0.1:5000/user/oscar?location=stavanger gir Hello oscar, you are forever young
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        return "Du bruker POST"
-    return "Du bruker GET"
-
-
-@app.route("/test")
-@app.route("/test/<name>")
-def test(name=None):
-    return render_template("test.html", person=name)
-
-
-@app.route("/login-form")
-def login_form():
-    return render_template("login-form.html", items=to_do_list)
-
-
-# url_for returnerer selve strengen til url´en som genereres
-# men da den relative etter root (og kun i terminalen, det er ikke noe bruker ser)
-# syntaks er url_for(metodenavn, ...argumenter)
-with app.test_request_context():
-    print(url_for("show_user_profile", username="Karl"))
-    print(url_for("show_user_profile", username="Johan"))
-
-
-# For handling get request form we can get
-# the form inputs value by using args attribute.
-# this values after submitting you will see in the urls.
-# e.g http://127.0.0.1:5000/handle_get?username=kunal&password=1234
-# this exploits our credentials so that's
-# why developers prefer POST request.
-@app.route("/handle_get", methods=["GET"])
-def handle_get():
-    print(f"request: {request}")
-    print(f"request.args: {request.args}")
-    print(f"request.form: {request.form}")
-    print(f"users: {users}")
-    if request.method == "GET":
-        username = request.args["username"]
-        password = request.args["password"]
-        print(username, password)
-        if username in users and users[username] == password:
-            return f"<h1>Welcome {username} !!!</h1>"
-        else:
-            return "<h1>invalid credentials!</h1>"
-    else:
-        return render_template("login.html")
-
-
-# For handling post request form we can get the form
-# inputs value by using POST attribute.
-# this values after submitting you will never see in the urls.
-@app.route("/handle_post", methods=["POST"])
-def handle_post():
-    print(f"request: {request}")
-    print(f"request.args: {request.args}")
-    print(f"request.form: {request.form}")
-    print(f"users: {users}")
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        print(username, password)
-        if username in users and users[username] == password:
-            return f"<h1>Welcome {username} !!!</h1>"
-        else:
-            return "<h1>invalid credentials!</h1>"
-    else:
-        return render_template("login.html")
 
 
 if __name__ == "__main__":
