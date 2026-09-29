@@ -1,9 +1,13 @@
 # NB: Forskjellen mellom 'request' (Flask) vs 'requests' (library):
 # request (brukes her)  — reads incoming requests to YOUR server (built into Flask, server-side)
 # requests (brukes i 01_04) — sends outgoing requests TO other APIs  (pip install requests, client-side)
+
 # For å kjøre i git-bash:
 # Naviger til rett undermappe (for eksempel 02_02)
 # .venv/Scripts/python.exe -m flask --app myApi.py run --debug
+# Husk at applikasjonen startes på ny hver gang jeg lagrer, så listen
+# vil gå tilbake til utgangspunktet.
+
 from flask import Flask, request, url_for, jsonify
 from markupsafe import escape
 import json
@@ -14,7 +18,7 @@ app = Flask(__name__)
 to_do_list = [
     {"id": 1, "activity": "dra over gulvene"},
     {"id": 2, "activity": "klippe plenen"},
-    {"id": 3, "activity": "kjøpe bobler"},
+    {"id": 3, "activity": "kjøpe lyspære"},
     {"id": 4, "activity": "spør om presanger til i morgen"},
 ]
 
@@ -29,6 +33,8 @@ to_do_list = [
 # Get one item	    GET	            /my-to-do-list/3
 # Update one item   PUT (or PATCH)	/my-to-do-list/3
 # Delete one item	DELETE	        /my-to-do-list/3
+
+# Så med andre ord, hver gang jeg skal gjøre noe med ett element, bruk /<nummer> i URLen
 
 
 #######################
@@ -45,9 +51,9 @@ to_do_list = [
 # curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": "teste APIet mitt"}' OK
 # curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": ""}' OK (tom string gjenkjennes)
 # curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": 1}' > OK (at int ikke er det samme som string gjenkjennes)
-# curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d  '{"activity": True}' > Blir håndtert av exceptions
+# curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": True}' > Blir håndtert av exceptions
 
-# curl -X POST http://127.0.0.1:5000/my_to_do_list -H "Content-Type: application/json" -d '{"activity": "kjøpe bobler"}' æøå ser ut til å krasje hele apiet. Får følgende feilmelding:
+# curl -X POST http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json" -d '{"activity": "kjøpe bobler"}' æøå så ut til å krasje hele apiet på windows maskin. Fikk følgende feilmelding:
 #'utf-8' codec can't decode byte 0xf8 in position 16: invalid start byte. Skjer bare fra git bash pga min datamaskins encoding. Skjer ikke i Powershell.
 # charset=utf-8
 
@@ -101,7 +107,7 @@ def retrieve_all_items():
 # Retrieve a single item (by item number)
 ##########################
 
-# curl -X GET http://127.0.0.1:5000/my-to-do-list/3 -H "Content-Type: application/json" > bør returnere 'kjøpe bobler'
+# curl -X GET http://127.0.0.1:5000/my-to-do-list/3 -H "Content-Type: application/json" > bør returnere 'kjøpe lyspære'
 # curl -X GET http://127.0.0.1:5000/my-to-do-list/tre -H "Content-Type: application/json" > bør returnere "Please enter an argument that can be converted into a number format ('1' is OK, 'One' is not)"
 # curl -X GET http://127.0.0.1:5000/my-to-do-list/-1 -H "Content-Type: application/json" > bør returnere "Please enter a number between 1 and {len(to_do_list)}"
 # curl -X GET http://127.0.0.1:5000/my-to-do-list/10 -H "Content-Type: application/json" > bør returnere "Please enter a number between 1 and {len(to_do_list)}"
@@ -123,7 +129,7 @@ def retrieve_single_item(item_id):
 #############################
 
 # curl -X PUT http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json" -d '{"activity": " lage daimkake"}'
-# curl -X PUT http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json" -d '{"activity": "kjøpe bobler"}' 
+# curl -X PUT http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json" -d '{"activity": "stramme fjøringene"}' 
 
 @app.route('/my-to-do-list/<item_id>', methods=['PUT'])
 def update_single_item(item_id):
