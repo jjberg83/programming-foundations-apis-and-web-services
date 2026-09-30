@@ -220,3 +220,15 @@ def to_do_item_is_valid(to_do_item):
 
 if __name__ == "__main__":
     app.run()
+
+# For å teste APIet med Postman online, gjør følgende.
+# Kjør applikasjon, men ikke i debug mode. 
+# Gå til Ports (ved siden av Terminal), skriv 5000 i Port feltet.
+# Trykk Enter, og logg inn med Github.
+# Høyreklikk adressen jeg får i Forwarded Address, velg Port visibility > Public
+# Når jeg er ferdig med å teste, skru denne tilbake igjen til Private
+# Gå til Postman og kopier Forwarded Address. Legg til /my-to-do-list bak adressen
+# Skal jeg bruke POST, klikk Body > raw i postman og legg inn {"activity": "min aktivitet"}
+# Når jeg er ferdig, husk å skru Port visibility tilbake til Private
+# Høyreklikk der jeg skrev 5000 i Port feltet, og skru av Port forwarding
+
