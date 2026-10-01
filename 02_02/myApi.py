@@ -232,3 +232,39 @@ if __name__ == "__main__":
 # Når jeg er ferdig, husk å skru Port visibility tilbake til Private
 # Høyreklikk der jeg skrev 5000 i Port feltet, og skru av Port forwarding
 
+
+
+#######################################################################
+# Claudes verdict of my code and comparison with teachers code in 02_05
+#######################################################################
+# Verdict: teacher's code (02_05/todo_api.py) is the better API. Mine has
+# stronger input validation and better notes, but these are the problems:
+#
+# 1. Errors are returned with status 200. Every error message is sent as a
+#    success, so client code can't tell success from failure without reading
+#    the text. Use e.g. return jsonify({"error": "..."}), 400 (or 404).
+# 2. Plain text responses. Only GET-all returns JSON. GET single returns just
+#    the activity string, not the whole object.
+# 3. PUT can crash with a 500 error. json.loads, int(item_id) and
+#    to_do_item["activity"] run BEFORE the try block, so /tre, a missing
+#    "activity" key or bad JSON gives an Internal Server Error. The
+#    "except: raise Exception(...)" also turns caught errors into a 500.
+# 4. An invalid PUT falls through to the long generic message instead of
+#    returning the specific validity_check reason.
+# 5. to_do_item_is_valid() can return None. With {} or {"id": 5} the loop
+#    never reaches a return, so POST replies "API-request error: None".
+# 6. IDs are renumbered on delete. In REST an ID should be stable, so
+#    "item 3" must always mean the same item. Tying ID to list position
+#    causes this. Better: find items by id (like find_todo) and make new
+#    IDs with max(id) + 1.
+# 7. Use request.get_json() / request.json instead of json.loads(request.data).
+#    Use <int:item_id> in the route so Flask rejects non-numeric IDs for you.
+# 8. Unused imports: url_for, escape.
+# 9. Small issue: a PUT with the item's current activity is rejected as a
+#    duplicate.
+#
+# What my code does better: it checks the key name, string type, empty
+# value, duplicates and single field (the teacher only checks that "task"
+# exists), and it has great curl/Postman notes.
+# Teacher's code weaknesses: DELETE returns 200 even if the ID doesn't
+# exist, no type or empty-value checks, and PUT crashes on a non-object body.
