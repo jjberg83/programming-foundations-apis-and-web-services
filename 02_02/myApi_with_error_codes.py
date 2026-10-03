@@ -127,7 +127,7 @@ def create_an_item():
 # curl -X GET http://127.0.0.1:5000/my-to-do-list -H "Content-Type: application/json"
 @app.route("/my-to-do-list", methods=["GET"])
 def retrieve_all_items():
-    return jsonify(to_do_list)
+    return jsonify(to_do_list), 200
 
 
 ##########################
@@ -162,26 +162,25 @@ def retrieve_single_item(item_id):
 def update_single_item(item_id):
     try:
         to_do_item = json.loads(request.data)
-        print(f"to_do_item: {to_do_item}")
         index = int(item_id) - 1 # python lists starts with index 0
-        activity = to_do_item["activity"]
-        validity_check = to_do_item_is_valid(to_do_item)
 
+        validity_check = to_do_item_is_valid(to_do_item)
+        
         if validity_check == "Valid":
             if index > -1 and index < len(to_do_list):
-                print("You, or your code, just made a PUT request!")
+                activity = to_do_item["activity"]   
+                # print("You, or your code, just made a PUT request!")
                 to_do_list[index]["activity"] = activity
                 print(f"To-do-listen etter PUT request: {to_do_list}")
-                return "You rock, to-do-list has been updated!"
+                # return 
+                return jsonify({"Message": "You rock, to-do-list has been updated!", "ToDoItem": to_do_list}), 200
             else:
                 return f"You have to have an id value between 1 and {len(to_do_list)}"
         else:
             return jsonify({"Request denied reason": validity_check}), 400
         
     except Exception as e:
-        return jsonify({"Boring error message": e}), 401
-        raise Exception("Oh shit")
-
+        return jsonify({"Boring error message": f"{e}"}), 400
 
 
 
@@ -213,23 +212,41 @@ def delete_single_item(item_number):
 # Helper functions (don´t repeat yourself - twice)
 # Functions here are used twice in the main route functions
 
+# For funksjonen under måtte jeg velge om APIet mitt skulle være en såkalt "tolerant reader"
+# Mao: når klienten gjør en request mot APIet, skal jeg godta forskjellige varianter, så lenge
+# de også inneholder en nøkkel kalt "activity", som for eksempel:
+# {
+#     "1": 1,
+#     "activity": "rive papir"
+# }
+# Fordelen med å være tolerant er hvis man har veldig mange klienter som bruker APIet over tid
+# Hvis en klient må skifte noe i systemet sitt, som gjør at de får 1eren ovenfor, godtar
+# vårt API det. I tillegg kan det bli såkalt bakover-kompatibelt. 
+# Ulempene er følgende:
+# 1 - It can't leak junk into your data. You could handle it by allowing, but filtering out extra fields,
+#     ,but you have to write extra logic for it. A simple, strict check at the beginning instead,
+#      stops "1": 1 before it gets stored, so it fixes that bug by design.
+# 2 - Typos go unnoticed. With {"activty": "x", "activity": "y"} the client never 
+#     finds out it misspelled a field.
+# 3 - Clients get misleading results. With PUT /my-to-do-list/2 and a body of 
+#     {"id": 7, "activity": "x"}, you return 200 and the client thinks it 
+#     changed the id. It didn't.
+
+# Jeg endte derfor opp med å ikke la APIet mitt være en "tolerant reader"
+
 def to_do_item_is_valid(to_do_item):
     '''
     Denne hjelpemetoden sjekker at:
-    - json-elementet kun inneholder inn ett element
-    - nøkkelen kalles "activity"
+    - json-elementet inneholder iallefall en nøkkel kalt activity
     - aktiviteten er en streng, og at den ikke er tom
     - aktiviteten ikke finnes fra før i listen
     '''
     
     for key,value in to_do_item.items():
-        if key == "id":
-            continue
-        # Verify that input is in the right format
-        if len(to_do_item.items()) != 1:
-            return "You can only send in one activity at a time, not more, not less"
+        if not "activity" in to_do_item:
+            return "There should be at least one key in the request called 'activity'"
         if key != "activity":
-            return "The key should be named activity"
+            continue
         if not isinstance(value, str):
             return "The value of the input should be a string"
         if len(value) < 1:
@@ -237,8 +254,6 @@ def to_do_item_is_valid(to_do_item):
         
         # Verify that the activity does not exist in the to-do-list already
         for element in to_do_list:
-            # print("----------")
-            # print(f"element[activity]= {element['activity']}, value= {value}")
             if element["activity"] == value:
                 return "Activity already exists in the to-do-list"
 

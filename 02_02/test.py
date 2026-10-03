@@ -1,4 +1,11 @@
-# myDict = {1: "noe", 2: "var", 3: "her"}
+myDict = {1: "noe", 2: "var", 3: "her"}
+
+try:
+  print(myDict[4])
+except Exception as e:
+  print("Noe gikk galt")
+  print(f"e: {e}")
+
 
 # # myDict[4] = "i går"
 # # myDict.update({5: "med meg"})
@@ -26,8 +33,8 @@
 #   print(key)
 #   print(value)
 
-tall = 2
-for x in range(tall, 10):
-  print(x)
-  print(tall)
-  print("-------")
+# tall = 2
+# for x in range(tall, 10):
+#   print(x)
+#   print(tall)
+#   print("-------")
