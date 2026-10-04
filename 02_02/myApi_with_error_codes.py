@@ -61,6 +61,18 @@ to_do_list = [
 
 # Så med andre ord, hver gang jeg skal gjøre noe med ett element, bruk /<nummer> i URLen
 
+#################################
+# Base routes/endpoints for API 
+#################################
+
+@app.route("/", methods=["GET"])
+def root():
+    return jsonify({"Message": "Welcome to this amazing API!", "Endpoints": ["/", "/my-to-do-list", "/documentation"]}), 200
+
+@app.route("/documentation", methods=["GET"])
+def documentation():
+    return jsonify({"How to use this documentation": "All the endpoints behaves as a key. Enter the key, and you see example requests you can try out on your own.", "http://127.0.0.1:5000/my-to-do-list": ["GET", "curl -X GET http://127.0.0.1:5000/my-to-do-list -H 'Content-Type: application/json'"]}), 200
+
 
 #######################
 # Create an item
