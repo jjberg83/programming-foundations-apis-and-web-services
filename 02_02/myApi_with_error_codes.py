@@ -47,6 +47,9 @@ to_do_list = [
     {"id": 5, "activity": "gjennomgå masse breakpoints!"},
 ]
 
+max_id = 0
+max_id_defined_before = False
+
 # Hva Copilot og Claude sier om navngivning av routes i Flask:
 # In REST, a URL identifies a resource (a thing), not an action. 
 # The action is expressed by the HTTP method (GET/POST/PUT/DELETE), 
@@ -65,6 +68,11 @@ to_do_list = [
 # Base routes/endpoints for API 
 #################################
 
+# Når jeg besøker http://127.0.0.1:5000 i nettleser, legger nettleser til en slash
+# Derfor ser ikke Flask forskjell når requesten kommer inn
+# På alle andre routes skjer ikke dette, fordi dette er den minste routen man kan ha,
+# og alle andre routes er større
+# Man kan se den ekstra slashen når man inspiserer requesten i developer tools under Headers > General > Request url
 @app.route("/", methods=["GET"])
 def root():
     return jsonify({"Message": "Welcome to this amazing API!", "Endpoints": ["/", "/my-to-do-list", "/documentation"]}), 200
@@ -72,6 +80,7 @@ def root():
 @app.route("/documentation", methods=["GET"])
 def documentation():
     return jsonify({"How to use this documentation": "All the endpoints behaves as a key. Enter the key, and you see example requests you can try out on your own.", "http://127.0.0.1:5000/my-to-do-list": ["GET", "curl -X GET http://127.0.0.1:5000/my-to-do-list -H 'Content-Type: application/json'"]}), 200
+
 
 
 #######################
@@ -105,7 +114,12 @@ def documentation():
 
 @app.route("/my-to-do-list", methods=["POST"])
 def create_an_item():
-    index = len(to_do_list) + 1
+    global max_id_defined_before, max_id
+    if not max_id_defined_before:
+        max_id = len(to_do_list) + 1
+        max_id_defined_before = True
+    else:
+        max_id += 1
     print(f"request.data er: {request.data}")
     try:
         to_do_item = json.loads(request.data)
@@ -113,7 +127,7 @@ def create_an_item():
         validity_check = to_do_item_is_valid(to_do_item)
 
         if validity_check == "Valid":
-            to_do_item["id"] = index
+            to_do_item["id"] = max_id
             to_do_list.append(to_do_item)
             print("You, or your code, just made a POST request!")
             print(f"To-do-listen etter POST request: {to_do_list}")
@@ -184,10 +198,9 @@ def update_single_item(item_id):
                 # print("You, or your code, just made a PUT request!")
                 to_do_list[index]["activity"] = activity
                 print(f"To-do-listen etter PUT request: {to_do_list}")
-                # return 
-                return jsonify({"Message": "You rock, to-do-list has been updated!", "ToDoItem": to_do_list}), 200
+                return jsonify({"Message": "You rock, to-do-list has been updated!", "ToDoItem": to_do_list[index]}), 200
             else:
-                return f"You have to have an id value between 1 and {len(to_do_list)}"
+                return jsonify({"Error message": f"You have to have an id value between 1 and {len(to_do_list)}"}), 400
         else:
             return jsonify({"Request denied reason": validity_check}), 400
         
