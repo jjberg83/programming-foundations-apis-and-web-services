@@ -47,9 +47,6 @@ to_do_list = [
     {"id": 5, "activity": "gjennomgå masse breakpoints!"},
 ]
 
-max_id = 0
-max_id_defined_before = False
-
 # Hva Copilot og Claude sier om navngivning av routes i Flask:
 # In REST, a URL identifies a resource (a thing), not an action. 
 # The action is expressed by the HTTP method (GET/POST/PUT/DELETE), 
@@ -114,32 +111,21 @@ def documentation():
 
 @app.route("/my-to-do-list", methods=["POST"])
 def create_an_item():
-    global max_id_defined_before, max_id
-    if not max_id_defined_before:
-        max_id = len(to_do_list) + 1
-        max_id_defined_before = True
-    else:
-        max_id += 1
-    print(f"request.data er: {request.data}")
+    
+    # print(f"request.data er: {request.data}")
     try:
         to_do_item = json.loads(request.data)
-        print(to_do_item)
         validity_check = to_do_item_is_valid(to_do_item)
 
-        if validity_check == "Valid":
-            to_do_item["id"] = max_id
+        if validity_check == "Valid": 
+            to_do_item["id"] = to_do_list[-1]["id"] + 1 if to_do_list else 1
             to_do_list.append(to_do_item)
-            print("You, or your code, just made a POST request!")
-            print(f"To-do-listen etter POST request: {to_do_list}")
-            # return "You rock, to-do-list has been updated!" # Gammel return ved suksess
-            return jsonify(to_do_item), 200
+            return jsonify({"Message": "You rock, to-do-list has been updated!", "ToDoItem": to_do_list[-1]}), 200
         
-        print(f"To-do-listen etter POST request: {to_do_list}")
-        return f"API-request error: {validity_check}"
-    
+        return jsonify({"Error message": validity_check}), 400
+                
     except Exception as e:
-        print(f"Something is incorrect with the API-request. Please check the syntax, and verify that all parameters have the correct data type. Details: {e}")
-        return "Something went wrong, to-do-list has not been updated"
+        return jsonify({"Boring error message": f"{e}"}), 400
 
 
 #######################
@@ -166,15 +152,18 @@ def retrieve_all_items():
 # curl -X GET http://127.0.0.1:5000/my-to-do-list/10 -H "Content-Type: application/json" > bør returnere "Please enter a number between 1 and {len(to_do_list)}"
 
 
-@app.route('/my-to-do-list/<item_id>', methods=['GET'])
+@app.route('/my-to-do-list/<int:item_id>', methods=['GET'])
 def retrieve_single_item(item_id):
     try:
-        index = int(item_id) - 1
-        if( (index >= len(to_do_list)) or (index < 0) ):
-            return f"Please enter a number between 1 and {len(to_do_list)}"
-        return to_do_list[index]["activity"]
+
+        for item in to_do_list: # Implementasjonen min ender opp på O(n) her
+            if item["id"] == item_id:
+                return jsonify({"Message": "Element exists", "ToDoItem": item}), 200
+        return jsonify({"Error message": f"There is no item with id={item_id}"}), 400
+
     except Exception as e:
-        return "Please enter an argument that can be converted into a number format ('1' and 1 is OK, 'One' is not)"
+            return jsonify({"Boring error message": f"{e}"}), 400
+
 
 
 ############################
@@ -184,25 +173,20 @@ def retrieve_single_item(item_id):
 # curl -X PUT http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json" -d '{"activity": " lage daimkake"}'
 # curl -X PUT http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json" -d '{"activity": "stramme fjøringene"}' 
 
-@app.route('/my-to-do-list/<item_id>', methods=['PUT'])
+@app.route('/my-to-do-list/<int:item_id>', methods=['PUT'])
 def update_single_item(item_id):
     try:
         to_do_item = json.loads(request.data)
-        index = int(item_id) - 1 # python lists starts with index 0
-
         validity_check = to_do_item_is_valid(to_do_item)
-        
+
         if validity_check == "Valid":
-            if index > -1 and index < len(to_do_list):
-                activity = to_do_item["activity"]   
-                # print("You, or your code, just made a PUT request!")
-                to_do_list[index]["activity"] = activity
-                print(f"To-do-listen etter PUT request: {to_do_list}")
-                return jsonify({"Message": "You rock, to-do-list has been updated!", "ToDoItem": to_do_list[index]}), 200
-            else:
-                return jsonify({"Error message": f"You have to have an id value between 1 and {len(to_do_list)}"}), 400
-        else:
-            return jsonify({"Request denied reason": validity_check}), 400
+            for item in to_do_list: # Implementasjonen min ender opp på O(n) her
+                if item["id"] == item_id:
+                    item["activity"] = to_do_item["activity"]
+                    return jsonify({"Message": "Task updated", "ToDoItem": item}), 200
+            return jsonify({"Error message": f"There is no item with id={item_id}"}), 400 
+        
+        return jsonify({"Error message": validity_check}), 400
         
     except Exception as e:
         return jsonify({"Boring error message": f"{e}"}), 400
@@ -214,25 +198,18 @@ def update_single_item(item_id):
 #########################
 
 # curl -X DELETE http://127.0.0.1:5000/my-to-do-list/2 -H "Content-Type: application/json"
-
-@app.route('/my-to-do-list/<item_number>', methods=['DELETE'])
-def delete_single_item(item_number):
+@app.route('/my-to-do-list/<int:item_id>', methods=['DELETE'])
+def delete_single_item(item_id):
     try:
-        item_number = int(item_number)
-    except:
-        return f"You have to insert a number after the last slash in the url. /1 is OK, /one is not"
+        for item in to_do_list: # Implementasjonen min ender opp på O(n) her
+            if item["id"] == item_id:
+                to_do_list.remove(item)
+                return jsonify({"Message": "Task deleted", "DeletedToDoItem": item}), 200
+        return jsonify({"Error message": f"There is no item with id={item_id}"}), 400 
+
+    except Exception as e:
+            return jsonify({"Boring error message": f"{e}"}), 400 
     
-    if item_number > 0 and item_number <= len(to_do_list):
-        index = item_number - 1
-        for x in range(index, len(to_do_list)):
-            if x == index:
-                to_do_list.pop(x)
-                continue
-            to_do_list[x-1]["id"] = x # x-1 since one element has been deleted
-        return "Item has been deleted from to-do-list"
-            
-    else:
-        return f"This item does not exist in the to-do-list"
 
 # Helper functions (don´t repeat yourself - twice)
 # Functions here are used twice in the main route functions
@@ -283,6 +260,23 @@ def to_do_item_is_valid(to_do_item):
                 return "Activity already exists in the to-do-list"
 
         return "Valid"
+
+# Skrudde på PyLance med "python.analysis.typeCheckingMode": "standard" i user settings for vscode (CMD + SHIFT + P, Open user settings (JSON))
+# Annotations ignoreres av Python, men PyLance er streng. Finnes også forskjellige rammeverk som implementerer det.
+# Så uansett god vane å begynne med.
+def item_in_to_do_list(id, to_do_list, operation):
+    for item in to_do_list: # Implementasjonen min ender opp på O(n) her
+        if item["id"] == id:
+            if operation == "GetItem":
+                return True, item
+            if operation == "UpdateItem":
+                return True, item
+            if operation == "DeleteItem":
+                return True, item
+
+    return False, None
+
+
 
 
 if __name__ == "__main__":
